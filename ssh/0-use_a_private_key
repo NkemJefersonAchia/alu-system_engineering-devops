@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+#Connecting to the ubuntu server with the assigned server IP address
+ssh -i ~/.ssh/school ubuntu@3.86.143.160
