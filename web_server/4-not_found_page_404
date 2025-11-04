@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# comment
-sudo apt update
-sudo apt install nginx -y
-sudo touch /var/www/html/index.html
-sudo touch /var/www/html/error404.html
-echo "Holberton School" | sudo tee /var/www/html/index.html
-echo "Ceci n'est pas une page" | sudo tee /var/www/html/error404.html
+# Configures Nginx with a custom 404 page
 
+# Update and install nginx
+apt-get update -y
+apt-get install nginx -y
+
+# Create index.html
+echo "Holberton School" > /var/www/html/index.html
+
+# Create custom 404 page
+echo "Ceci n'est pas une page" > /var/www/html/error404.html
+
+# Configure nginx with custom 404 page and redirect
 printf %s "server {
         listen 80 default_server;
         listen [::]:80 default_server;
@@ -19,9 +24,10 @@ printf %s "server {
         server_name _;
 
         location /redirect_me {
-           return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4/;
+           return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
         }
 }
-" | sudo tee /etc/nginx/sites-available/default
+" > /etc/nginx/sites-available/default
 
-sudo service nginx restart
+# Restart nginx
+service nginx restart
