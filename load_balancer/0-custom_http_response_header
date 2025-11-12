@@ -1,38 +1,12 @@
 #!/usr/bin/env bash
-# Configures Nginx with a custom HTTP response header
-# Inspired from https://stackoverflow.com/questions/22306006/configuration-file-etc-nginx-nginx-conf-test-failed-how-do-i-know-why-this-h
+# Configures a server with Nginx and a custom header
 
-# Clean install of Nginx
-sudo apt remove --purge nginx nginx-full nginx-common -y
-sudo apt update
-sudo apt install nginx -y
+# Install Nginx
+apt-get update -y
+apt-get install -y nginx
 
-# Create a simple index page
-sudo touch /var/www/html/index.html
-echo "Hello World!" | sudo tee /var/www/html/index.html
-
-# Configure Nginx with custom header
-printf %s 'server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
-
-        root /var/www/html;
-        index index.html index.htm;
-
-        server_name _;
-        
-        add_header X-Served-By $hostname;
-        
-        location / {
-           try_files $uri $uri/ =404;
-        }
-}
-' | sudo tee /etc/nginx/sites-available/default
-
-# Test configuration
-sudo nginx -t
+# Set custom header in the default site config
+sed -i "/server_name _;/a add_header X-Served-By \$HOSTNAME;" /etc/nginx/sites-available/default
 
 # Restart Nginx
-sudo service nginx restart
-
-echo "Nginx configured successfully with X-Served-By header"
+service nginx restart
