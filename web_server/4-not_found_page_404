@@ -1,40 +1,44 @@
 #!/usr/bin/env bash
-# 4-not_found_page_404: Configure a custom 404 page for Nginx
+# Configures Nginx to have a custom 404 page
 
-# Variables
-NGINX_CONF="/etc/nginx/sites-available/default"
-CUSTOM_404_PAGE="/var/www/html/404.html"
+# Update and install Nginx
+apt-get update -y
+apt-get install -y nginx
 
-# 1. Update package lists and install Nginx if needed
-sudo apt-get update -y
-if ! command -v nginx &> /dev/null; then
-    sudo apt-get install -y nginx
-fi
+# Create index page
+echo 'Holberton School for the win!' > /var/www/html/index.nginx-debian.html
 
-# 2. Create a custom 404 page
-echo "Ceci n'est pas une page" | sudo tee $CUSTOM_404_PAGE > /dev/null
+# Create custom 404 page
+echo "Ceci n'est pas une page" > /var/www/html/404.html
 
-# 3. Backup original Nginx config if not backed up yet
-if [ ! -f "${NGINX_CONF}.bak" ]; then
-    sudo cp "$NGINX_CONF" "${NGINX_CONF}.bak"
-fi
+# Configure Nginx with redirect and custom 404
+cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-# 4. Add custom 404 page configuration inside the server block
-# Check if the error_page directive is already present
-if ! grep -q "error_page 404" "$NGINX_CONF"; then
-    sudo sed -i "/server_name _;/a \\
-    error_page 404 /404.html;\\
-    location = /404.html {\\
-        root /var/www/html;\\
-        internal;\\
-    }" "$NGINX_CONF"
-fi
+    root /var/www/html;
+    index index.nginx-debian.html index.html index.htm;
 
-# 5. Test Nginx configuration
-sudo nginx -t
+    server_name _;
 
-# 6. Restart Nginx
-sudo service nginx restart
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
 
-# Optional sanity check: make sure 404 page works
-# curl -s http://localhost/doesnotexist
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+}
+EOF
+
+# Test Nginx configuration
+nginx -t
+
+# Restart Nginx
+service nginx restart
